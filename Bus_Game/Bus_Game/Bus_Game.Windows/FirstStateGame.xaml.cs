@@ -50,6 +50,7 @@ namespace Bus_Game
             if (_GameInformation.Item2 >= 3)
                 initPanel(_Right_Panel, _PlayerRight_Images);
             initPanel(_Center_Panel, _CenterImages);
+            _CenterImages[0].Source = new BitmapImage(new Uri("ms-appx:Resources/Diamand_Ace.png", UriKind.RelativeOrAbsolute));
         }
         #region Initialisation panel and images
         private void InitImageArrays()

@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GameLogic.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\Diamand_Ace.png" />
     <Content Include="$(MSBuildThisFileDirectory)Resources\Logo.scale-100.png" />
   </ItemGroup>
 </Project>
