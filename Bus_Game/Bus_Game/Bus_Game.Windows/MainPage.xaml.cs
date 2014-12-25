@@ -37,8 +37,19 @@ namespace Bus_Game
         }
         private void Init()
         {
-            this.Bots_rb.IsChecked = true;
+            this._Bots_rb.IsChecked = true;
+            this._Username_tx.Text = "Admin";
             this._AmountOfPlayers_cb.Items.Add("1");
+            this._AmountOfPlayers_cb.Items.Add("2");
+            this._AmountOfPlayers_cb.Items.Add("3");
+            this._AmountOfPlayers_cb.SelectedIndex = 0;
+            EnabledSettings();
+        }
+        private void EnabledSettings()
+        {
+            this._Username_tx.IsEnabled = false;
+            this._Players_rb.IsEnabled = false;
+            //this._AmountOfPlayers_cb.IsEnabled = false;
         }
 
         #region NavigationHelper registration
@@ -60,10 +71,10 @@ namespace Bus_Game
 
         private void _Start_bn_Click(object sender, RoutedEventArgs e)
         {
-            bool bots = (bool)Bots_rb.IsChecked;
-            int amount = (int)_AmountOfPlayers_cb.SelectedItem;
-            Tuple<bool, int> info = new Tuple<bool, int>(bots, amount);
-            this.Frame.Navigate(typeof(FirstStateGame), e);
+            bool bots = (bool)_Bots_rb.IsChecked;
+            int amount = (int)_AmountOfPlayers_cb.SelectedIndex;
+            Tuple<bool, int> info = new Tuple<bool, int>(bots, amount + 1);
+            this.Frame.Navigate(typeof(FirstStateGame), info);
         }
     }
 }

@@ -38,15 +38,15 @@
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" >
                 <StackPanel>
-                    <TextBox x:Name="Username_tx" Text="" Header="Username:" FontSize="48" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="Feedback_tx" Text="[Feedback]" FontSize="20" HorizontalAlignment="Center" Foreground="Aqua"/>
+                    <TextBox x:Name="_Username_tx" Text="" Header="Username:" FontSize="48" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="_Feedback_tx" Text="[Feedback]" FontSize="20" HorizontalAlignment="Center" Foreground="Aqua"/>
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="1">
                 <StackPanel x:Name="_AmountOfPlayers_panel" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <RadioButton x:Name="Bots_rb" Content="Bots" Margin="20,0,20,0"/>
-                        <RadioButton x:Name="Players_rb" Content="Players" Margin="20,0,20,0"/>
+                        <RadioButton x:Name="_Bots_rb" Content="Bots" Margin="20,0,20,0"/>
+                        <RadioButton x:Name="_Players_rb" Content="Players" Margin="20,0,20,0"/>
                     </StackPanel>
                     <ComboBox x:Name="_AmountOfPlayers_cb" Header="Amout of players" FontSize="32"/>
                 </StackPanel>
