@@ -156,7 +156,7 @@ $RECYCLE.BIN/
 .DS_Store
 
 # Images
-.png
-.jpg
-.jpeg
-.bmp
+*.png
+*.jpg
+*.jpeg
+*.bmp
