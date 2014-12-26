@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -25,10 +27,20 @@ namespace Bus_Game
     /// </summary>
     public sealed partial class FirstStateGame : Page
     {
+        #region Fields
+
+        private SolidColorBrush _DefaultBackground_bn, _DefaultForeground_bn, _PressedBackground_bn, _PressedForeground_bn;
+        private DispatcherTimer _Timer, _LastRoundTimer;
         private Tuple<bool, int> _GameInformation = null;
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
-        private Image[] _PlayerDown_Images, _PlayerLeft_Images, _PlayerTop_Images, _PlayerRight_Images, _CenterImages;
+        private Image[] _PlayerDown_Images, _PlayerLeft_Images, _PlayerTop_Images, _PlayerRight_Images, _Center_Images;
+        private Card[] _PlayerDown_Cards, _PlayerLeft_Cards, _PlayerTop_Cards, _PlayerRight_Cards, _Center_Cards;
+        private Button next_bn, button1_bn, button2_bn;
+        private TextBlock button1_2_tx;
+        private int round = 1, playingPlayer = 0, buttonPressed = 0, timerTime;
+        #endregion
+
         public FirstStateGame()
         {
             this.InitializeComponent();
@@ -36,12 +48,16 @@ namespace Bus_Game
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
         }
+        #region Initialisation
+        #region Init
         private void Init()
         {
             InitImageArrays();
+            InitButtons();
+            InitColors();
             _Down_Panel.Orientation = Orientation.Horizontal;
             _Top_Panel.Orientation = Orientation.Horizontal;
-            _Center_Panel.Orientation = Orientation.Horizontal;
+            Init_Center_Panel();
             initPanel(_Down_Panel, _PlayerDown_Images);
             if (_GameInformation.Item2 >= 1)
                 initPanel(_Top_Panel, _PlayerTop_Images);
@@ -49,19 +65,61 @@ namespace Bus_Game
                 initPanel(_Left_Panel, _PlayerLeft_Images);
             if (_GameInformation.Item2 >= 3)
                 initPanel(_Right_Panel, _PlayerRight_Images);
-            initPanel(_Center_Panel, _CenterImages);
-            _CenterImages[0].Source = new BitmapImage(new Uri("ms-appx:Resources/Diamand_Ace.png", UriKind.RelativeOrAbsolute));
+            Check();
+            this._Wrong_Panel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            if (Deck.Instance._cards.Length != 52)
+                throw new NotSupportedException();
         }
-        #region Initialisation panel and images
+        #endregion
+        #region Buttons
+        private void InitButtons()
+        {
+            next_bn = new Button();
+            button1_bn = new Button();
+            button2_bn = new Button();
+            button1_2_tx = new TextBlock();
+            button1_2_tx.Text = "of";
+            button1_2_tx.Margin = new Thickness(20, 0, 20, 0);
+            button1_2_tx.FontSize = 32;
+            MethodToButton(next_bn, "Next", Next_bn_Click);
+            MethodToButton(button1_bn, "Button1", Button1_bn_Click);
+            MethodToButton(button2_bn, "Button2", Button2_bn_Click);
+        }
+        private void InitDefaultButtonColor()
+        {
+            button1_bn.Background = _DefaultBackground_bn;
+            button2_bn.Background = _DefaultBackground_bn;
+            button1_bn.Foreground = _DefaultForeground_bn;
+            button2_bn.Foreground = _DefaultForeground_bn;
+        }
+        private void MethodToButton(Button button, string text, Action<object, RoutedEventArgs> Method)
+        {
+            button.Content = text;
+            button.Click += new RoutedEventHandler(Method);
+        }
+        private void InitColors()
+        {
+            this._PressedBackground_bn = new SolidColorBrush(Colors.Black);
+            this._DefaultForeground_bn = new SolidColorBrush(Colors.Gray);
+            this._PressedBackground_bn = new SolidColorBrush(Colors.Green);
+            this._PressedForeground_bn = new SolidColorBrush(Colors.Yellow);
+        }
+        #endregion
+        #region Images
         private void InitImageArrays()
         {
             _PlayerDown_Images = new Image[4];
+            _PlayerDown_Cards = new Card[4];
             _PlayerTop_Images = new Image[4];
+            _PlayerTop_Cards = new Card[4];
             _PlayerLeft_Images = new Image[4];
+            _PlayerLeft_Cards = new Card[4];
             _PlayerRight_Images = new Image[4];
-            _CenterImages = new Image[1];
-            _CenterImages[0] = new Image();
-            InitImage(_CenterImages[0]);
+            _PlayerRight_Cards = new Card[4];
+            _Center_Images = new Image[1];
+            _Center_Cards = new Card[1];
+            _Center_Images[0] = new Image();
+            InitImage(_Center_Images[0]);
             for (int i = 0; i < 4; i++)
             {
                 _PlayerDown_Images[i] = new Image();
@@ -97,30 +155,46 @@ namespace Bus_Game
             image.Source = img;
             image.Stretch = Stretch.Fill;
         }
-        private void InitDownPanel()
+        #endregion
+        #region Panels
+        private void InitDefaultPanelColor()
         {
-            this._Down_Panel.Orientation = Orientation.Horizontal;
-            this._Down_Panel.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center;
-            this._Down_Panel.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center;
-            foreach (Image img in _PlayerDown_Images)
-                _Down_Panel.Children.Add(img);
+            SolidColorBrush color = new SolidColorBrush(Colors.Gray);
+            this._Down_Panel.Background = color;
+            this._Left_Panel.Background = color;
+            this._Top_Panel.Background = color;
+            this._Right_Panel.Background = color;
         }
-        private void InitTopPanel()
+        private void Init_Center_Panel()
         {
-            this._Top_Panel.Orientation = Orientation.Horizontal;
-            this._Top_Panel.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center;
-            this._Top_Panel.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center;
-            foreach (Image img in _PlayerTop_Images)
-                _Top_Panel.Children.Add(img);
+            StackPanel topPanel = new StackPanel();
+            StackPanel bottemPanel = new StackPanel();
+            topPanel.Orientation = Orientation.Horizontal;
+            bottemPanel.Orientation = Orientation.Horizontal;
+            initPanel(topPanel, null);
+            initPanel(bottemPanel, _Center_Images);
+
+            topPanel.Children.Add(button1_bn);
+            topPanel.Children.Add(button1_2_tx);
+            topPanel.Children.Add(button2_bn);
+            bottemPanel.Children.Add(next_bn);
+            _Center_Panel.Children.Add(topPanel);
+            _Center_Panel.Children.Add(bottemPanel);
+            NextCenterCard();
         }
         private void initPanel(StackPanel panel, Image[] images)
         {
-            panel.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center;
-            panel.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center;
-            foreach (Image img in images)
-                panel.Children.Add(img);
+            if (panel != null)
+            {
+                panel.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center;
+                panel.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center;
+            }
+            if (images != null)
+                foreach (Image img in images)
+                    panel.Children.Add(img);
 
         }
+        #endregion
         #endregion
         #region NavigationHelper registration
         public ObservableDictionary DefaultViewModel
@@ -148,6 +222,367 @@ namespace Bus_Game
         {
             navigationHelper.OnNavigatedFrom(e);
         }
+        #endregion
+        #region GameLogic
+        #region Check Functions
+        private void Check()
+        {
+            CheckButtonsState();
+            CheckPanels();
+            AddImage();
+            this._Wrong_Panel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+        }
+        #region ButtonPressed
+        private void ButtonPressed()
+        {
+            if (!RightButtonPressed())
+            { Wrong(); }
+            else
+            { this.timerTime = 0; }
+        }
+        #endregion
+        #region RightButtonPressed
+        private bool RightButtonPressed()
+        {
+            bool result = false;
+            #region Round 1
+            if (round == 1)
+            { result = Round1(); }
+            #endregion
+            #region Round 2
+            else if (round == 2)
+            { result = Round2(); }
+            #endregion
+            #region Round 3
+            else if (round == 3)
+            { result = Round3(); }
+            #endregion
+            #region Round 4
+            else if (round == 4)
+            { result = Round4(); }
+            #endregion
+            else { return false; }
+            return result;
+        }
+        #endregion
+        #region Wrong
+        private void Wrong()
+        {
+            this.timerTime = 2;
+            this._Wrong_Panel.Visibility = Windows.UI.Xaml.Visibility.Visible;
+        }
+        #endregion
+        #region CheckButtonsState
+        private void CheckButtonsState()
+        {
+            if (round == 1)
+            {
+                button1_bn.Content = "Rood";
+                button2_bn.Content = "Zwart";
+            }
+            else if (round == 2)
+            {
+                button1_bn.Content = "Hoger";
+                button2_bn.Content = "Lager";
+            }
+            else if (round == 3)
+            {
+                button1_bn.Content = "Binnen";
+                button2_bn.Content = "Buiten";
+            }
+            else if (round == 4)
+            {
+                button1_bn.Content = "Heb hem al";
+                button2_bn.Content = "Heb hem nog niet";
+            }
+            else
+            {
+                LastRound();
+            }
+            InitDefaultButtonColor();
+        }
+        #endregion
+        #region CheckPanels
+        private void CheckPanels()
+        {
+            InitDefaultPanelColor();
+            SolidColorBrush color = new SolidColorBrush(Colors.Red);
+            if (_GameInformation.Item2 == 1)
+            {
+                if (playingPlayer == 0)
+                    _Down_Panel.Background = color;
+                else if (playingPlayer == 1)
+                    _Top_Panel.Background = color;
+            }
+            else if (_GameInformation.Item2 == 2)
+            {
+                if (playingPlayer == 0)
+                    _Down_Panel.Background = color;
+                else if (playingPlayer == 1)
+                    _Left_Panel.Background = color;
+                else if (playingPlayer == 2)
+                    _Top_Panel.Background = color;
+            }
+            else if (_GameInformation.Item2 == 3)
+            {
+                if (playingPlayer == 0)
+                    _Down_Panel.Background = color;
+                else if (playingPlayer == 1)
+                    _Left_Panel.Background = color;
+                else if (playingPlayer == 2)
+                    _Top_Panel.Background = color;
+                else if (playingPlayer == 3)
+                    _Right_Panel.Background = color;
+            }
+        }
+        #endregion
+        #region AddImage
+        private void AddImage()
+        {
+            if (_Center_Cards != null)
+            {
+                #region 2 Players
+                if (_GameInformation.Item2 == 1)
+                {
+                    if (playingPlayer == 1)
+                    {
+                        if (round == 1) { _PlayerDown_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 2) { _PlayerDown_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerDown_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerDown_Cards[3] = _Center_Cards[0]; }
+                    }
+                    else if (playingPlayer == 0)
+                    {
+                        if (round == 2) { _PlayerTop_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerTop_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerTop_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 5) { _PlayerTop_Cards[3] = _Center_Cards[0]; }
+                    }
+                }
+                #endregion
+                #region 3 Players
+                else if (_GameInformation.Item2 == 2)
+                {
+                    if (playingPlayer == 1)
+                    {
+                        if (round == 1) { _PlayerDown_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 2) { _PlayerDown_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerDown_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerDown_Cards[3] = _Center_Cards[0]; }
+                    }
+                    else if (playingPlayer == 2)
+                    {
+                        if (round == 1) { _PlayerLeft_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 2) { _PlayerLeft_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerLeft_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerLeft_Cards[3] = _Center_Cards[0]; }
+                    }
+                    else if (playingPlayer == 0)
+                    {
+                        if (round == 2) { _PlayerTop_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerTop_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerTop_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 5) { _PlayerTop_Cards[3] = _Center_Cards[0]; }
+                    }
+                }
+                #endregion
+                #region 4 Players
+                else if (_GameInformation.Item2 == 3)
+                {
+                    if (playingPlayer == 1)
+                    {
+                        if (round == 1) { _PlayerDown_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 2) { _PlayerDown_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerDown_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerDown_Cards[3] = _Center_Cards[0]; }
+                    }
+                    else if (playingPlayer == 2)
+                    {
+                        if (round == 1) { _PlayerLeft_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 2) { _PlayerLeft_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerLeft_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerLeft_Cards[3] = _Center_Cards[0]; }
+                    }
+                    else if (playingPlayer == 3)
+                    {
+                        if (round == 1) { _PlayerTop_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 2) { _PlayerTop_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerTop_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerTop_Cards[3] = _Center_Cards[0]; }
+                    }
+                    else if (playingPlayer == 0)
+                    {
+                        if (round == 2) { _PlayerRight_Cards[0] = _Center_Cards[0]; }
+                        else if (round == 3) { _PlayerRight_Cards[1] = _Center_Cards[0]; }
+                        else if (round == 4) { _PlayerRight_Cards[2] = _Center_Cards[0]; }
+                        else if (round == 5) { _PlayerRight_Cards[3] = _Center_Cards[0]; }
+                    }
+                }
+                #endregion
+                CheckImages();
+                NextCenterCard();
+            }
+        }
+        #endregion
+        #region CheckImages
+        private void CheckImages()
+        {
+            for (int i = 0; i < _PlayerDown_Cards.Length; i++)
+                if (_PlayerDown_Cards[i] != null)
+                    _PlayerDown_Images[i].Source = LoadImageIndex(_PlayerDown_Cards[i].Index);
+            for (int i = 0; i < _PlayerLeft_Cards.Length; i++)
+                if (_PlayerTop_Cards[i] != null)
+                    _PlayerTop_Images[i].Source = LoadImageIndex(_PlayerTop_Cards[i].Index);
+            for (int i = 0; i < _PlayerDown_Cards.Length; i++)
+                if (_PlayerLeft_Cards[i] != null)
+                    _PlayerLeft_Images[i].Source = LoadImageIndex(_PlayerLeft_Cards[i].Index);
+            for (int i = 0; i < _PlayerLeft_Cards.Length; i++)
+                if (_PlayerRight_Cards[i] != null)
+                    _PlayerRight_Images[i].Source = LoadImageIndex(_PlayerRight_Cards[i].Index);
+        }
+        private BitmapImage LoadImageIndex(int index)
+        { return new BitmapImage(new Uri("ms-appx:Resources/" + index + ".png")); }
+        #endregion
+        #endregion
+        #region Button functions
+        private void Next_bn_Click(object sender, RoutedEventArgs e)
+        { NextCenterCard(); }
+        private void Button1_bn_Click(object sender, RoutedEventArgs e)
+        {
+            this.buttonPressed = 1;
+            ButtonPressed();
+            StartTimer();
+            this.button1_bn.Background = _PressedBackground_bn;
+            this.button1_bn.Foreground = _PressedForeground_bn;
+        }
+        private void Button2_bn_Click(object sender, RoutedEventArgs e)
+        {
+            this.buttonPressed = 2;
+            ButtonPressed();
+            StartTimer();
+            this.button2_bn.Background = _PressedBackground_bn;
+            this.button2_bn.Foreground = _PressedForeground_bn;
+        }
+        #endregion
+        #region Timers + Action
+        private void StartTimer()
+        {
+            if (_Timer == null)
+            {
+                this._Timer = new DispatcherTimer();
+                this._Timer.Tick += TimerAction;
+                this._Timer.Interval = new TimeSpan(0, 0, timerTime);
+                this._Timer.Start();
+            }
+        }
+        private void LastRound()
+        {
+            if (_LastRoundTimer == null)
+            {
+                this._LastRoundTimer = new DispatcherTimer();
+                this._LastRoundTimer.Tick += LastRoundAction;
+                this._LastRoundTimer.Interval = new TimeSpan(0, 0, 2);
+                this._LastRoundTimer.Start();
+            }
+        }
+        private void TimerAction(object sender, object e)
+        {
+            if (playingPlayer == _GameInformation.Item2)
+            {
+                playingPlayer = 0;
+                round++;
+            }
+            else
+            {
+                playingPlayer++;
+            }
+            Check();
+            this._Timer.Stop();
+            this._Timer = null;
+        }
+        private void LastRoundAction(object sender, object e)
+        {
+            this.Frame.Navigate(typeof(SecondStateGame), e);
+            this._LastRoundTimer.Stop();
+            this._LastRoundTimer = null;
+        }
+        #endregion
+        #region Logic
+        private bool Round1()
+        {
+            bool red = (_Center_Cards[0].Index <= 26 ? true : false);
+            Debug.WriteLine("Red = " + red + ", Button " + buttonPressed);
+            if (buttonPressed == 1 && red)
+            { return true; }
+            else if (buttonPressed == 2 && !red)
+            { return true; }
+            return false;
+        }
+        private bool Round2()
+        {
+            bool lower = false;
+            if (_GameInformation.Item2 == 1)
+            {
+                if (playingPlayer == 0) { lower = (_PlayerDown_Cards[0].Value < _Center_Cards[0].Value ? true : false); }
+                else if (playingPlayer == 1) { lower = (_PlayerTop_Cards[0].Value < _Center_Cards[0].Value ? true : false); }
+            }
+            if (buttonPressed == 1 && lower) { return true; }
+            else if (buttonPressed == 2 && !lower) { return true; }
+            return false;
+        }
+        private bool Round3()
+        {
+            //bool inside = false;
+            //if (_GameInformation.Item2 == 1)
+            //{
+            //    if (playingPlayer == 0) { }
+            //}
+            return false;
+        }
+        private bool Round4()
+        {
+            return false;
+        }
+        private void NextCenterCard()
+        {
+            Random random = new Random();
+            //int index = random.Next(0, 104);
+            bool succes = false;
+            int index = 0, count = 0;
+            while (!succes)
+            {
+                index = random.Next(1, 29);
+                if (!Deck.Instance._cards[index].Taken())
+                    succes = !Deck.Instance._cards[index].Taken();
+                count++;
+                if (!succes && count > Deck.Instance._cards.Length)
+                {
+                    succes = true;
+                    index = -1;
+                }
+            }
+            index = (index > 52 ? index - 52 : index);
+            if (index != -1)
+            { Deck.Instance._cards[index].Taken(true); }
+            SetCenterCard(index);
+        }
+        private void SetCenterCard(int index)
+        {
+            BitmapImage img = null;
+            Card card = null;
+            if (index == -1)
+            {
+                img = new BitmapImage(new Uri("ms-appx:Resources/Logo.scale-100.png", UriKind.RelativeOrAbsolute));
+            }
+            else
+            {
+                img = new BitmapImage(new Uri("ms-appx:Resources/" + (index + 1) + ".png", UriKind.RelativeOrAbsolute));
+                card = Deck.Instance._cards[index];
+            }
+            _Center_Cards[0] = card;
+            _Center_Images[0].Source = img;
+        }
+        #endregion
         #endregion
     }
 }

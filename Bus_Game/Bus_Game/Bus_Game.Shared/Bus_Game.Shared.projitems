@@ -15,10 +15,39 @@
     <Compile Include="$(MSBuildThisFileDirectory)App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Card.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Deck.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GameLogic.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)Resources\Diamand_Ace.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\10.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\11.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\12.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\13.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\14.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\15.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\16.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\17.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\18.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\19.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\2.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\20.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\21.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\22.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\23.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\24.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\25.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\26.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\27.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\28.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\29.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\3.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\4.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\5.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\6.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\7.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\8.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Resources\9.png" />
     <Content Include="$(MSBuildThisFileDirectory)Resources\Logo.scale-100.png" />
   </ItemGroup>
 </Project>

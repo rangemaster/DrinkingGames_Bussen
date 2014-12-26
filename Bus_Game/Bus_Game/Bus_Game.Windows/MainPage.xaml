@@ -48,7 +48,7 @@
                         <RadioButton x:Name="_Bots_rb" Content="Bots" Margin="20,0,20,0"/>
                         <RadioButton x:Name="_Players_rb" Content="Players" Margin="20,0,20,0"/>
                     </StackPanel>
-                    <ComboBox x:Name="_AmountOfPlayers_cb" Header="Amout of players" FontSize="32"/>
+                    <ComboBox x:Name="_AmountOfPlayers_cb" Header="Amount of players" FontSize="32" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
