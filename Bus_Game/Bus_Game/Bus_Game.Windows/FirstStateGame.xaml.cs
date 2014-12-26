@@ -508,16 +508,17 @@ namespace Bus_Game
         }
         #endregion
         #region Logic
+        #region Round 1
         private bool Round1()
         {
             bool red = (_Center_Cards[0].Index <= 26 ? true : false);
-            Debug.WriteLine("Red = " + red + ", Button " + buttonPressed);
-            if (buttonPressed == 1 && red)
-            { return true; }
-            else if (buttonPressed == 2 && !red)
-            { return true; }
+            Debug.WriteLine("Button Pressed: " + buttonPressed + ", Red: " + red);
+            if (buttonPressed == 1 && red) { return true; }
+            else if (buttonPressed == 2 && !red) { return true; }
             return false;
         }
+        #endregion
+        #region Round 2
         private bool Round2()
         {
             bool lower = false;
@@ -526,23 +527,65 @@ namespace Bus_Game
                 if (playingPlayer == 0) { lower = (_PlayerDown_Cards[0].Value < _Center_Cards[0].Value ? true : false); }
                 else if (playingPlayer == 1) { lower = (_PlayerTop_Cards[0].Value < _Center_Cards[0].Value ? true : false); }
             }
+            Debug.WriteLine("Button Pressed: " + buttonPressed + ", Lower: " + lower);
             if (buttonPressed == 1 && lower) { return true; }
             else if (buttonPressed == 2 && !lower) { return true; }
             return false;
         }
+        #endregion
+        #region Round 3
         private bool Round3()
         {
-            //bool inside = false;
-            //if (_GameInformation.Item2 == 1)
-            //{
-            //    if (playingPlayer == 0) { }
-            //}
+            bool inside = false;
+            if (_GameInformation.Item2 == 1)
+            {
+                if (playingPlayer == 0) { inside = InBetween_Down(); }
+                else if (playingPlayer == 1) { inside = InBetween_Top(); }
+            }
+            else if (_GameInformation.Item2 == 2)
+            {
+                if (playingPlayer == 0) { inside = InBetween_Down(); }
+                else if (playingPlayer == 1) { inside = InBetween_Left(); }
+                else if (playingPlayer == 2) { inside = InBetween_Top(); }
+            }
+            else if (_GameInformation.Item2 == 3)
+            {
+                if (playingPlayer == 0) { inside = InBetween_Down(); }
+                else if (playingPlayer == 1) { inside = InBetween_Left(); }
+                else if (playingPlayer == 2) { inside = InBetween_Top(); }
+                else if (playingPlayer == 3) { inside = InBetween_Right(); }
+            }
+            Debug.WriteLine("Button Pressed: " + buttonPressed + ", Inside: " + inside);
+            if (buttonPressed == 1 && inside) { return true; }
+            else if (buttonPressed == 2 && !inside) { return true; }
             return false;
         }
+        private bool InBetween_Down() { return InBetween_Round3(_PlayerDown_Cards[0].Value, _PlayerDown_Cards[1].Value, _Center_Cards[0].Value); }
+        private bool InBetween_Left() { return InBetween_Round3(_PlayerLeft_Cards[0].Value, _PlayerLeft_Cards[1].Value, _Center_Cards[0].Value); }
+        private bool InBetween_Top() { return InBetween_Round3(_PlayerTop_Cards[0].Value, _PlayerTop_Cards[1].Value, _Center_Cards[0].Value); }
+        private bool InBetween_Right() { return InBetween_Round3(_PlayerRight_Cards[0].Value, _PlayerRight_Cards[1].Value, _Center_Cards[0].Value); }
+        private bool InBetween_Round3(int value1, int value2, int other)
+        {
+            Debug.WriteLine(value1 + " < " + other + " < " + value2 + " | OR | " + value2 + " < " + other + " < " + value1);
+            if (value1 < other && other < value2)
+                return true;
+            if (value2 < other && other < value1)
+                return true;
+            return false;
+        }
+        #endregion
+        #region Round 4
         private bool Round4()
         {
+            bool inPossession = false;
+
+            Debug.WriteLine("Button Pressed: " + buttonPressed + ", In Possession: " + inPossession);
+            if (buttonPressed == 1 && inPossession) { return true; }
+            else if (buttonPressed == 2 && !inPossession) { return true; }
             return false;
         }
+        #endregion
+        #region NextCenterCard
         private void NextCenterCard()
         {
             Random random = new Random();
@@ -566,6 +609,8 @@ namespace Bus_Game
             { Deck.Instance._cards[index].Taken(true); }
             SetCenterCard(index);
         }
+        #endregion
+        #region SetCenterCard(int index)
         private void SetCenterCard(int index)
         {
             BitmapImage img = null;
@@ -582,6 +627,7 @@ namespace Bus_Game
             _Center_Cards[0] = card;
             _Center_Images[0].Source = img;
         }
+        #endregion
         #endregion
         #endregion
     }

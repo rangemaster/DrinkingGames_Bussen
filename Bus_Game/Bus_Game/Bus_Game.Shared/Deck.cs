@@ -34,7 +34,7 @@ namespace Bus_Game
             {
                 int value = (i % 13) + 2;
                 string kind = kinds[(i / 13)];
-                Debug.WriteLine("Value: " + i + ", " + value + ", " + kind);
+                Debug.WriteLine("Index: " + i + ", Value: " + value + ", Kind: " + kind);
                 _cards[i] = new Card(i+1, value, kind);
             }
         }
