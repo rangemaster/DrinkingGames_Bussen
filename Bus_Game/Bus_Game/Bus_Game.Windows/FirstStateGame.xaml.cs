@@ -238,7 +238,7 @@ namespace Bus_Game
             if (!RightButtonPressed())
             { Wrong(); }
             else
-            { this.timerTime = 0; }
+            { this.timerTime = 2; }
         }
         #endregion
         #region RightButtonPressed
@@ -420,7 +420,7 @@ namespace Bus_Game
                 }
                 #endregion
                 CheckImages();
-                NextCenterCard();
+                _Center_Images[0].Source = LoadImageString("Logo.scale-100");
             }
         }
         #endregion
@@ -439,9 +439,14 @@ namespace Bus_Game
             for (int i = 0; i < _PlayerLeft_Cards.Length; i++)
                 if (_PlayerRight_Cards[i] != null)
                     _PlayerRight_Images[i].Source = LoadImageIndex(_PlayerRight_Cards[i].Index);
+            for (int i = 0; i < _Center_Cards.Length; i++)
+                if (_Center_Cards[i] != null)
+                    _Center_Images[i].Source = LoadImageIndex(_Center_Cards[i].Index);
         }
+        private BitmapImage LoadImageString(string name)
+        { return new BitmapImage(new Uri("ms-appx:Resources/" + name + ".png")); }
         private BitmapImage LoadImageIndex(int index)
-        { return new BitmapImage(new Uri("ms-appx:Resources/" + index + ".png")); }
+        { return LoadImageString(index.ToString()); }
         #endregion
         #endregion
         #region Button functions
@@ -450,7 +455,6 @@ namespace Bus_Game
         private void Button1_bn_Click(object sender, RoutedEventArgs e)
         {
             this.buttonPressed = 1;
-            ButtonPressed();
             StartTimer();
             this.button1_bn.Background = _PressedBackground_bn;
             this.button1_bn.Foreground = _PressedForeground_bn;
@@ -458,7 +462,6 @@ namespace Bus_Game
         private void Button2_bn_Click(object sender, RoutedEventArgs e)
         {
             this.buttonPressed = 2;
-            ButtonPressed();
             StartTimer();
             this.button2_bn.Background = _PressedBackground_bn;
             this.button2_bn.Foreground = _PressedForeground_bn;
@@ -469,6 +472,7 @@ namespace Bus_Game
         {
             if (_Timer == null)
             {
+                TimerActionCount = 0;
                 this._Timer = new DispatcherTimer();
                 this._Timer.Tick += TimerAction;
                 this._Timer.Interval = new TimeSpan(0, 0, timerTime);
@@ -485,20 +489,31 @@ namespace Bus_Game
                 this._LastRoundTimer.Start();
             }
         }
+        private int TimerActionCount = 0;
         private void TimerAction(object sender, object e)
         {
-            if (playingPlayer == _GameInformation.Item2)
+            if (TimerActionCount == 0)
             {
-                playingPlayer = 0;
-                round++;
+                ButtonPressed();
+                NextCenterCard();
+                CheckImages();
             }
-            else
+            else if (TimerActionCount == 1)
             {
-                playingPlayer++;
+                if (playingPlayer == _GameInformation.Item2)
+                {
+                    playingPlayer = 0;
+                    round++;
+                }
+                else
+                {
+                    playingPlayer++;
+                }
+                Check();
+                this._Timer.Stop();
+                this._Timer = null;
             }
-            Check();
-            this._Timer.Stop();
-            this._Timer = null;
+            TimerActionCount++;
         }
         private void LastRoundAction(object sender, object e)
         {
