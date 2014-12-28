@@ -13,6 +13,7 @@ namespace Bus_Game
         {
             this._Index = index;
             this._Value = value;
+            this._Name = name;
             this._Taken = false;
         }
         public int Index { get { return _Index; } }

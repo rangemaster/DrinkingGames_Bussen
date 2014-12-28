@@ -45,12 +45,14 @@ namespace Bus_Game
             this._AmountOfPlayers_cb.SelectedIndex = 0;
             EnabledSettings();
         }
+        #region Enabled
         private void EnabledSettings()
         {
             this._Username_tx.IsEnabled = false;
             this._Players_rb.IsEnabled = false;
-            //this._AmountOfPlayers_cb.IsEnabled = false;
+            this._AmountOfPlayers_cb.IsEnabled = false;
         }
+        #endregion
 
         #region NavigationHelper registration
         private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)

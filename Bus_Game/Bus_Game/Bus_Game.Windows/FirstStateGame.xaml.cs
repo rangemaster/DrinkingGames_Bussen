@@ -37,7 +37,7 @@ namespace Bus_Game
         private Image[] _PlayerDown_Images, _PlayerLeft_Images, _PlayerTop_Images, _PlayerRight_Images, _Center_Images;
         private Card[] _PlayerDown_Cards, _PlayerLeft_Cards, _PlayerTop_Cards, _PlayerRight_Cards, _Center_Cards;
         private Button next_bn, button1_bn, button2_bn;
-        private TextBlock button1_2_tx;
+        private TextBlock button1_2_tx, index_value_tx;
         private int round = 1, playingPlayer = 0, buttonPressed = 0, timerTime;
         #endregion
 
@@ -48,10 +48,12 @@ namespace Bus_Game
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
         }
+
         #region Initialisation
         #region Init
         private void Init()
         {
+            this.Background_Grid.Background = new SolidColorBrush(Colors.Black);
             InitImageArrays();
             InitButtons();
             InitColors();
@@ -100,7 +102,7 @@ namespace Bus_Game
         private void InitColors()
         {
             this._PressedBackground_bn = new SolidColorBrush(Colors.Black);
-            this._DefaultForeground_bn = new SolidColorBrush(Colors.Gray);
+            this._DefaultForeground_bn = new SolidColorBrush(Colors.White);
             this._PressedBackground_bn = new SolidColorBrush(Colors.Green);
             this._PressedForeground_bn = new SolidColorBrush(Colors.Yellow);
         }
@@ -159,7 +161,7 @@ namespace Bus_Game
         #region Panels
         private void InitDefaultPanelColor()
         {
-            SolidColorBrush color = new SolidColorBrush(Colors.Gray);
+            SolidColorBrush color = new SolidColorBrush(Colors.Black);
             this._Down_Panel.Background = color;
             this._Left_Panel.Background = color;
             this._Top_Panel.Background = color;
@@ -173,6 +175,8 @@ namespace Bus_Game
             bottemPanel.Orientation = Orientation.Horizontal;
             initPanel(topPanel, null);
             initPanel(bottemPanel, _Center_Images);
+            index_value_tx = new TextBlock();
+            index_value_tx.Text = "Index: ";
 
             topPanel.Children.Add(button1_bn);
             topPanel.Children.Add(button1_2_tx);
@@ -180,6 +184,7 @@ namespace Bus_Game
             bottemPanel.Children.Add(next_bn);
             _Center_Panel.Children.Add(topPanel);
             _Center_Panel.Children.Add(bottemPanel);
+            _Center_Panel.Children.Add(index_value_tx);
             NextCenterCard();
         }
         private void initPanel(StackPanel panel, Image[] images)
@@ -196,6 +201,7 @@ namespace Bus_Game
         }
         #endregion
         #endregion
+
         #region NavigationHelper registration
         public ObservableDictionary DefaultViewModel
         {
@@ -223,13 +229,14 @@ namespace Bus_Game
             navigationHelper.OnNavigatedFrom(e);
         }
         #endregion
+
         #region GameLogic
         #region Check Functions
         private void Check()
         {
             CheckButtonsState();
             CheckPanels();
-            AddImage();
+            MoveCenterImage();
             this._Wrong_Panel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
         }
         #region ButtonPressed
@@ -238,7 +245,7 @@ namespace Bus_Game
             if (!RightButtonPressed())
             { Wrong(); }
             else
-            { this.timerTime = 2; }
+            { this.timerTime = 0; }
         }
         #endregion
         #region RightButtonPressed
@@ -336,8 +343,8 @@ namespace Bus_Game
             }
         }
         #endregion
-        #region AddImage
-        private void AddImage()
+        #region MoveCenterImage
+        private void MoveCenterImage()
         {
             if (_Center_Cards != null)
             {
@@ -421,6 +428,7 @@ namespace Bus_Game
                 #endregion
                 CheckImages();
                 _Center_Images[0].Source = LoadImageString("Logo.scale-100");
+                index_value_tx.Text = "";
             }
         }
         #endregion
@@ -442,6 +450,7 @@ namespace Bus_Game
             for (int i = 0; i < _Center_Cards.Length; i++)
                 if (_Center_Cards[i] != null)
                     _Center_Images[i].Source = LoadImageIndex(_Center_Cards[i].Index);
+            Debug.WriteLine("--- Images Checked (repaint) ---");
         }
         private BitmapImage LoadImageString(string name)
         { return new BitmapImage(new Uri("ms-appx:Resources/" + name + ".png")); }
@@ -492,14 +501,11 @@ namespace Bus_Game
         private int TimerActionCount = 0;
         private void TimerAction(object sender, object e)
         {
-            if (TimerActionCount == 0)
+            if (TimerActionCount == 1)
             {
                 ButtonPressed();
                 NextCenterCard();
                 CheckImages();
-            }
-            else if (TimerActionCount == 1)
-            {
                 if (playingPlayer == _GameInformation.Item2)
                 {
                     playingPlayer = 0;
@@ -509,6 +515,9 @@ namespace Bus_Game
                 {
                     playingPlayer++;
                 }
+            }
+            else if (TimerActionCount == 2)
+            {
                 Check();
                 this._Timer.Stop();
                 this._Timer = null;
@@ -516,17 +525,14 @@ namespace Bus_Game
             TimerActionCount++;
         }
         private void LastRoundAction(object sender, object e)
-        {
-            this.Frame.Navigate(typeof(SecondStateGame), e);
-            this._LastRoundTimer.Stop();
-            this._LastRoundTimer = null;
-        }
+        { NextPageNavigation(); }
         #endregion
         #region Logic
         #region Round 1
         private bool Round1()
         {
             bool red = (_Center_Cards[0].Index <= 26 ? true : false);
+            Debug.WriteLine("Card Index: " + _Center_Cards[0].Index);
             Debug.WriteLine("Button Pressed: " + buttonPressed + ", Red: " + red);
             if (buttonPressed == 1 && red) { return true; }
             else if (buttonPressed == 2 && !red) { return true; }
@@ -537,14 +543,25 @@ namespace Bus_Game
         private bool Round2()
         {
             bool lower = false;
+            bool equal = false;
+            #region 2 Players
             if (_GameInformation.Item2 == 1)
             {
-                if (playingPlayer == 0) { lower = (_PlayerDown_Cards[0].Value < _Center_Cards[0].Value ? true : false); }
-                else if (playingPlayer == 1) { lower = (_PlayerTop_Cards[0].Value < _Center_Cards[0].Value ? true : false); }
+                if (playingPlayer == 0)
+                {
+                    lower = (_PlayerDown_Cards[0].Value < _Center_Cards[0].Value);
+                    equal = (_PlayerDown_Cards[0].Value == _Center_Cards[0].Value);
+                }
+                else if (playingPlayer == 1)
+                {
+                    lower = (_PlayerTop_Cards[0].Value < _Center_Cards[0].Value);
+                    equal = _PlayerTop_Cards[0].Value == _Center_Cards[0].Value;
+                }
             }
+            #endregion
             Debug.WriteLine("Button Pressed: " + buttonPressed + ", Lower: " + lower);
-            if (buttonPressed == 1 && lower) { return true; }
-            else if (buttonPressed == 2 && !lower) { return true; }
+            if (buttonPressed == 1 && lower && !equal) { return true; }
+            else if (buttonPressed == 2 && !lower && !equal) { return true; }
             return false;
         }
         #endregion
@@ -593,7 +610,6 @@ namespace Bus_Game
         private bool Round4()
         {
             bool inPossession = false;
-
             Debug.WriteLine("Button Pressed: " + buttonPressed + ", In Possession: " + inPossession);
             if (buttonPressed == 1 && inPossession) { return true; }
             else if (buttonPressed == 2 && !inPossession) { return true; }
@@ -621,7 +637,10 @@ namespace Bus_Game
             }
             index = (index > 52 ? index - 52 : index);
             if (index != -1)
-            { Deck.Instance._cards[index].Taken(true); }
+            {
+                Deck.Instance._cards[index].Taken(true);
+                index = Deck.Instance._cards[index].Index;
+            }
             SetCenterCard(index);
         }
         #endregion
@@ -632,18 +651,65 @@ namespace Bus_Game
             Card card = null;
             if (index == -1)
             {
-                img = new BitmapImage(new Uri("ms-appx:Resources/Logo.scale-100.png", UriKind.RelativeOrAbsolute));
+                img = LoadImageString("Logo.scale-100");
             }
             else
             {
-                img = new BitmapImage(new Uri("ms-appx:Resources/" + (index + 1) + ".png", UriKind.RelativeOrAbsolute));
+                Debugging(index);
+                Debug.WriteLine("--- Try loading image: " + index + ".png");
+                img = LoadImageIndex(index);
                 card = Deck.Instance._cards[index];
             }
             _Center_Cards[0] = card;
             _Center_Images[0].Source = img;
+            index_value_tx.Text = "Index: " + index + " - " + card.Index + ", Value: " + card.Value + ", Name: " + card.Name;
+        }
+        private void Debugging(int index)
+        {
+            if (_Center_Cards[0] != null)
+                Debug.WriteLine("Loading card: " + index + ", original center card index: " + _Center_Cards[0].Index);
+            if (_PlayerDown_Cards[0] != null)
+                Debug.WriteLine("_PlayerDown_Cards: " + _PlayerDown_Cards[0].Index);
+            if (_PlayerDown_Cards[1] != null)
+                Debug.WriteLine(", " + _PlayerDown_Cards[1].Index);
+            if (_PlayerDown_Cards[2] != null)
+                Debug.WriteLine(", " + _PlayerDown_Cards[2].Index);
+            if (_PlayerDown_Cards[3] != null)
+                Debug.WriteLine(", " + _PlayerDown_Cards[3].Index);
         }
         #endregion
         #endregion
+        #endregion
+        #region Last Navigation
+        private void NextPageNavigation()
+        {
+            Tuple<Card[], Card[]> players1and2 = null;
+            Tuple<Card[], Card[]> players3and4 = null;
+            if (_GameInformation.Item2 == 1)
+            {
+                players1and2 = new Tuple<Card[], Card[]>(_PlayerDown_Cards, _PlayerTop_Cards);
+                players3and4 = new Tuple<Card[], Card[]>(null, null);
+            }
+            else if (_GameInformation.Item2 == 2)
+            {
+                players1and2 = new Tuple<Card[], Card[]>(_PlayerDown_Cards, _PlayerLeft_Cards);
+                players3and4 = new Tuple<Card[], Card[]>(_PlayerTop_Cards, null);
+            }
+            else if (_GameInformation.Item2 == 3)
+            {
+                players1and2 = new Tuple<Card[], Card[]>(_PlayerDown_Cards, _PlayerLeft_Cards);
+                players3and4 = new Tuple<Card[], Card[]>(_PlayerTop_Cards, _PlayerRight_Cards);
+            }
+
+            Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>> playerState = new Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>>(players1and2, players3and4);
+            Tuple<bool, int> gameInformation = new Tuple<bool, int>(_GameInformation.Item1, _GameInformation.Item2);
+            Tuple<Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>>, Tuple<bool, int>> information = null;
+            information = new Tuple<Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>>, Tuple<bool, int>>(playerState, gameInformation);
+
+            this.Frame.Navigate(typeof(SecondStateGame), information);
+            this._LastRoundTimer.Stop();
+            this._LastRoundTimer = null;
+        }
         #endregion
     }
 }

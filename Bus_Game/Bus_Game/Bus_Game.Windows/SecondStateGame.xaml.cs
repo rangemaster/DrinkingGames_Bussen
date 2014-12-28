@@ -24,26 +24,9 @@ namespace Bus_Game
     public sealed partial class SecondStateGame : Page
     {
         private Tuple<bool, int> _GameInformation = null;
+        private Card[] _PlayerDown_Card = null, _PlayerTop_Card = null, _PlayerLeft_Card = null, _PlayerRight_Card = null;
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
-
-        /// <summary>
-        /// This can be changed to a strongly typed view model.
-        /// </summary>
-        public ObservableDictionary DefaultViewModel
-        {
-            get { return this.defaultViewModel; }
-        }
-
-        /// <summary>
-        /// NavigationHelper is used on each page to aid in navigation and 
-        /// process lifetime management
-        /// </summary>
-        public NavigationHelper NavigationHelper
-        {
-            get { return this.navigationHelper; }
-        }
-
 
         public SecondStateGame()
         {
@@ -53,55 +36,59 @@ namespace Bus_Game
             this.navigationHelper.SaveState += navigationHelper_SaveState;
         }
 
-        /// <summary>
-        /// Populates the page with content passed during navigation. Any saved state is also
-        /// provided when recreating a page from a prior session.
-        /// </summary>
-        /// <param name="sender">
-        /// The source of the event; typically <see cref="NavigationHelper"/>
-        /// </param>
-        /// <param name="e">Event data that provides both the navigation parameter passed to
-        /// <see cref="Frame.Navigate(Type, Object)"/> when this page was initially requested and
-        /// a dictionary of state preserved by this page during an earlier
-        /// session. The state will be null the first time a page is visited.</param>
-        private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
+        #region Initialisation
+        #region Init
+        private void Init()
         {
-        }
 
-        /// <summary>
-        /// Preserves state associated with this page in case the application is suspended or the
-        /// page is discarded from the navigation cache.  Values must conform to the serialization
-        /// requirements of <see cref="SuspensionManager.SessionState"/>.
-        /// </summary>
-        /// <param name="sender">The source of the event; typically <see cref="NavigationHelper"/></param>
-        /// <param name="e">Event data that provides an empty dictionary to be populated with
-        /// serializable state.</param>
-        private void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
-        {
         }
+        #endregion
+        #endregion
 
         #region NavigationHelper registration
-
-        /// The methods provided in this section are simply used to allow
-        /// NavigationHelper to respond to the page's navigation methods.
-        /// 
-        /// Page specific logic should be placed in event handlers for the  
-        /// <see cref="GridCS.Common.NavigationHelper.LoadState"/>
-        /// and <see cref="GridCS.Common.NavigationHelper.SaveState"/>.
-        /// The navigation parameter is available in the LoadState method 
-        /// in addition to page state preserved during an earlier session.
-
+        private void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
+        { }
+        private void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
+        { }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            Tuple<Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>>, Tuple<bool, int>> information = e.Parameter as Tuple<Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>>, Tuple<bool, int>>;
+            _GameInformation = information.Item2;
+            #region 2 Players
+            if (_GameInformation.Item2 == 1)
+            {
+                _PlayerDown_Card = information.Item1.Item1.Item1;
+                _PlayerTop_Card = information.Item1.Item1.Item2;
+            }
+            #endregion
+            #region 3 Players
+            if (_GameInformation.Item2 == 2)
+            {
+                _PlayerDown_Card = information.Item1.Item1.Item1;
+                _PlayerLeft_Card = information.Item1.Item1.Item2;
+                _PlayerTop_Card = information.Item1.Item2.Item1;
+            }
+            #endregion
+            #region 4 Players
+            if (_GameInformation.Item2 == 3)
+            {
+                _PlayerDown_Card = information.Item1.Item1.Item1;
+                _PlayerLeft_Card = information.Item1.Item1.Item2;
+                _PlayerTop_Card = information.Item1.Item2.Item1;
+                _PlayerRight_Card = information.Item1.Item2.Item2;
+            }
+            #endregion
             navigationHelper.OnNavigatedTo(e);
         }
-
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             this._GameInformation = (Tuple<bool, int>)(e.Parameter);
             navigationHelper.OnNavigatedFrom(e);
         }
-
+        public ObservableDictionary DefaultViewModel
+        { get { return this.defaultViewModel; } }
+        public NavigationHelper NavigationHelper
+        { get { return this.navigationHelper; } }
         #endregion
     }
 }

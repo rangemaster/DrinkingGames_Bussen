@@ -14,7 +14,7 @@
         <x:String x:Key="AppName">First Round</x:String>
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="Background_Grid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ChildrenTransitions>
             <TransitionCollection>
                 <EntranceThemeTransition/>

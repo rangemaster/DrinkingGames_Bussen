@@ -32,10 +32,14 @@ namespace Bus_Game
             string[] kinds = new string[] { "Diamand", "Hart", "Spade", "Clubs" };
             for (int i = 0; i < _cards.Length; i++)
             {
+                int index = i + 2;
                 int value = (i % 13) + 2;
+                int kindIndex = (i / 13);
                 string kind = kinds[(i / 13)];
-                Debug.WriteLine("Index: " + i + ", Value: " + value + ", Kind: " + kind);
-                _cards[i] = new Card(i+1, value, kind);
+
+
+                Debug.WriteLine("Index: " + index + ", Value: " + value + ", Kind: " + kind + "(" + kindIndex + ")");
+                _cards[i] = new Card(index, value, kind);
             }
         }
     }
