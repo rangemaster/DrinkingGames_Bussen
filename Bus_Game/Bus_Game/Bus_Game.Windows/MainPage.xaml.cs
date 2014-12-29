@@ -1,6 +1,7 @@
 ﻿using Bus_Game.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -50,7 +51,7 @@ namespace Bus_Game
         {
             this._Username_tx.IsEnabled = false;
             this._Players_rb.IsEnabled = false;
-            this._AmountOfPlayers_cb.IsEnabled = false;
+            this._AmountOfPlayers_cb.IsEnabled = true;
         }
         #endregion
 
@@ -78,5 +79,67 @@ namespace Bus_Game
             Tuple<bool, int> info = new Tuple<bool, int>(bots, amount + 1);
             this.Frame.Navigate(typeof(FirstStateGame), info);
         }
+        #region Skip
+        private void _Skip_To_Second_bn_Click(object sender, RoutedEventArgs e)
+        {
+            Tuple<Card[], Card[]> players1and2 = null;
+            Tuple<Card[], Card[]> players3and4 = null;
+            #region 2 Players
+            if (_AmountOfPlayers_cb.SelectedIndex + 1 == 1)
+            {
+                players1and2 = new Tuple<Card[], Card[]>(GenerateCardArray(), GenerateCardArray());
+                players3and4 = new Tuple<Card[], Card[]>(null, null);
+            }
+            #endregion
+            #region 3 Players
+            if (_AmountOfPlayers_cb.SelectedIndex + 1 == 2)
+            {
+                players1and2 = new Tuple<Card[], Card[]>(GenerateCardArray(), GenerateCardArray());
+                players3and4 = new Tuple<Card[], Card[]>(GenerateCardArray(), null);
+            }
+            #endregion
+            #region 4 Players
+            if (_AmountOfPlayers_cb.SelectedIndex + 1 == 3)
+            {
+                players1and2 = new Tuple<Card[], Card[]>(GenerateCardArray(), GenerateCardArray());
+                players3and4 = new Tuple<Card[], Card[]>(GenerateCardArray(), GenerateCardArray());
+            }
+            #endregion
+            Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>> players = new Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>>(players1and2, players3and4);
+            Tuple<bool, int> gameInfo = new Tuple<bool, int>((bool)_Bots_rb.IsChecked, _AmountOfPlayers_cb.SelectedIndex + 1);
+            Tuple<Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>>, Tuple<bool, int>> information;
+            information = new Tuple<Tuple<Tuple<Card[], Card[]>, Tuple<Card[], Card[]>>, Tuple<bool, int>>(players, gameInfo);
+            this.Frame.Navigate(typeof(SecondStateGame), information);
+        }
+        #region Generate Card Array
+        private Card[] GenerateCardArray()
+        {
+            Card[] array = new Card[4];
+            Random random = new Random();
+            for (int i = 0; i < array.Length; i++)
+            {
+                int index = 0;
+                bool found = false;
+                while (!found || index < Deck.Instance._cards.Length)
+                {
+                    Debug.WriteLine("Length: " + Deck.Instance._cards.Length + ", " + i + ", " + index + ", " + Deck.Instance._cards[index].Taken());
+                    found = !Deck.Instance._cards[index].Taken();
+                    if (found)
+                    {
+                        array[i] = Deck.Instance._cards[index];
+                        Deck.Instance._cards[index].Taken(true);
+                        break;
+                    }
+                    else { index++; }
+                }
+                if (!found)
+                {
+                    Debug.WriteLine("GenerateCardArray(), Could not find an avaible card.");
+                }
+            }
+            return array;
+        }
+        #endregion
+        #endregion
     }
 }

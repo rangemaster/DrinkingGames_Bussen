@@ -38,7 +38,7 @@ namespace Bus_Game
         private Card[] _PlayerDown_Cards, _PlayerLeft_Cards, _PlayerTop_Cards, _PlayerRight_Cards, _Center_Cards;
         private Button next_bn, button1_bn, button2_bn;
         private TextBlock button1_2_tx, index_value_tx;
-        private int round = 1, playingPlayer = 0, buttonPressed = 0, timerTime;
+        private int round = 1, playingPlayer = 0, buttonPressed = 0, timerTime = 0;
         #endregion
 
         public FirstStateGame()
@@ -244,8 +244,8 @@ namespace Bus_Game
         {
             if (!RightButtonPressed())
             { Wrong(); }
-            else
-            { this.timerTime = 0; }
+            //else
+            //{ this.timerTime = 1; }
         }
         #endregion
         #region RightButtonPressed
@@ -275,7 +275,7 @@ namespace Bus_Game
         #region Wrong
         private void Wrong()
         {
-            this.timerTime = 2;
+            //this.timerTime = 1;
             this._Wrong_Panel.Visibility = Windows.UI.Xaml.Visibility.Visible;
         }
         #endregion
@@ -625,7 +625,7 @@ namespace Bus_Game
             int index = 0, count = 0;
             while (!succes)
             {
-                index = random.Next(1, 29);
+                index = random.Next(1, 27);
                 if (!Deck.Instance._cards[index].Taken())
                     succes = !Deck.Instance._cards[index].Taken();
                 count++;

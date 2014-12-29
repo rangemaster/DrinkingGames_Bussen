@@ -52,7 +52,10 @@
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button x:Name="_Start_bn" Content="Start" Click="_Start_bn_Click" FontSize="48"/>
+                <StackPanel>
+                    <Button x:Name="_Start_bn" Content="Start" Click="_Start_bn_Click" FontSize="48" HorizontalAlignment="Center"/>
+                    <Button x:Name="_Skip_To_Second_bn" Content="Skip to second page" Click="_Skip_To_Second_bn_Click" HorizontalAlignment="Center"/>
+                </StackPanel>
             </Grid>
         </Grid>
 
